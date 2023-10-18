@@ -1,6 +1,7 @@
 import streamlit as st
 import openai
 import requests
+import openai_secret_manager
 
 # Read OpenAI API key from needful.txt
 with open("needful.txt") as f:
@@ -12,8 +13,8 @@ openai_model = "text-davinci-002"
 openai_prompt = "Hello, how are you?"
 
 # Define Langchain api and params
-langchain_url = "https://api.openai.com/v1/completions"
-langchain_key = openai_key
+langchain_url = "https://api.langchain.com/v1/preprocess"
+langchain_key = openai_secret_manager.get_secret("langchain")["api_key"]
 
 # Define Streamlit app
 def app():
@@ -30,6 +31,7 @@ def app():
         }
         langchain_response = requests.post(langchain_url, json=langchain_data)
         langchain_output = langchain_response.json()
+        print(langchain_output)  # Print contents of langchain_output dictionary
         langchain_text = langchain_output["text"]
         # Generate response using OpenAI API
         openai_data = {
