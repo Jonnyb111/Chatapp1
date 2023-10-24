@@ -1,20 +1,23 @@
-import streamlit as st
+#
 import openai
 import requests
-import openai_secret_manager
+import streamlit as st
+import os
+from dotenv import load_dotenv
 
-# Read OpenAI API key from needful.txt
-with open("needful.txt") as f:
-    openai_key = f.read().strip()
+# Load environment variables from .env file
+load_dotenv()
+openai_key = os.environ.get("OPENAI_API_KEY")
+langchain_key = os.environ.get("LANGCHAIN_KEY")
 
 # Define OpenAI API endpoint and parameters
 openai_url = "https://api.openai.com/v1/completions"
 openai_model = "text-davinci-002"
-openai_prompt = "Hello, how are you?"
+openai_prompt = "you are a good bot with step by step instructions. review the details provided and give the best instructions you can. "
 
-# Define Langchain api and params
-langchain_url = "https://api.langchain.com/v1/preprocess"
-langchain_key = openai_secret_manager.get_secret("langchain")["api_key"]
+# Define LangChain API endpoint and parameters
+#langchain_url = "https://api.langchain.com/v1/preprocess"
+#langchain_url = "https://api.openai.com/v1/completions"
 
 # Define Streamlit app
 def app():
@@ -25,17 +28,16 @@ def app():
     if user_input:
         # Preprocess user input using LangChain API
         langchain_data = {
-            "text": user_input,
-            "model": "gpt-3.5",
+            "text": openai_prompt + " " + user_input,
+            "model": "gpt-3",
             "api_key": langchain_key,
         }
         langchain_response = requests.post(langchain_url, json=langchain_data)
         langchain_output = langchain_response.json()
-        print(langchain_output)  # Print contents of langchain_output dictionary
         langchain_text = langchain_output["text"]
         # Generate response using OpenAI API
         openai_data = {
-            "prompt": openai_prompt + " " + langchain_text,
+            "prompt": langchain_text,
             "max_tokens": 1024,
             "n": 1,
             "stop": None,
